@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoraMinds Talking Avatar</title>
+    <!-- Google Fonts: Inter for a clean modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles for the body to center content */
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh; /* Full viewport height */
+            background-color: #f0f0f0; /* Light grey background */
+            margin: 0;
+            padding: 10px; /* Reduced padding around the container */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+            color: #333; /* Default text color */
+        }
+
+        /* Main container for the avatar and controls */
+        .container {
+            background-color: white;
+            padding: 20px; /* Reduced padding inside the container */
+            border-radius: 15px; /* Rounded corners for a modern feel */
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Soft shadow for depth */
+            text-align: center;
+            max-width: 600px; /* Max width for desktop view */
+            width: 100%; /* Full width on smaller screens */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Heading style */
+        h1 {
+            color: #2c3e50; /* Darker blue-grey for heading */
+            margin-bottom: 15px; /* Reduced margin */
+            font-weight: 700; /* Bold font weight */
+            font-size: 1.8em; /* Responsive font size */
+        }
+
+        /* Container for the SVG avatar */
+        #avatar-container {
+            width: 100%;
+            /* Maintain 1:1 aspect ratio by setting padding-bottom to 100% of its width */
+            padding-bottom: 100%; 
+            position: relative; /* Needed for absolute positioning of SVG */
+            max-width: 350px; /* Slightly reduced max width for avatar on larger screens */
+            max-height: 40vh; /* Max height relative to viewport height for flexibility */
+            margin: 15px auto; /* Reduced vertical spacing */
+            border: 1px solid #e0e0e0; /* Light border */
+            border-radius: 12px; /* Rounded corners */
+            overflow: hidden; /* Ensure nothing spills outside */
+            background-color: #f9f9f9; /* Slightly off-white background */
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
+            display: flex; /* Used for initial centering before SVG is loaded */
+            align-items: center;
+            justify-content: center;
+            /* No min-height here; max-height and padding-bottom handle sizing */
+        }
+
+        /* SVG styling within its container */
+        #avatar-container svg {
+            position: absolute; /* Position absolutely within the relative parent */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block; /* Remove extra space below inline elements */
+            object-fit: contain; /* Ensure SVG scales down without cropping, maintains aspect ratio */
+            /* REMINDER: Adjust viewBox in your SVG files for better cropping */
+        }
+
+        /* Controls section layout */
+        .controls {
+            margin-top: 15px; /* Reduced margin */
+            display: flex;
+            gap: 10px; /* Reduced space between buttons */
+            justify-content: center;
+            flex-wrap: wrap; /* Allow buttons to wrap to next line on small screens */
+        }
+
+        /* Button base styling */
+        button {
+            padding: 12px 25px; /* Slightly smaller padding */
+            font-size: 1em; /* Slightly smaller font size */
+            cursor: pointer;
+            border: none;
+            border-radius: 10px; /* Rounded corners */
+            background-color: #28a745; /* Green color for play/action */
+            color: white;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2); /* Soft shadow */
+            position: relative;
+            overflow: hidden; /* For potential future button effects */
+        }
+
+        /* Button hover effects */
+        button:hover {
+            background-color: #218838; /* Darker green on hover */
+            transform: translateY(-3px); /* Slight lift effect */
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3); /* Enhanced shadow on hover */
+        }
+
+        /* Button active/click effect */
+        button:active {
+            transform: translateY(0); /* Return to original position */
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4); /* Smaller shadow on click */
+        }
+
+        /* Style for the active/selected speaker button */
+        button.active {
+            background-color: #007bff; /* Active blue color */
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.2);
+            outline: 2px solid #007bff; /* Blue outline */
+            outline-offset: 3px; /* Space between button and outline */
+        }
+
+        /* Disabled button style */
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Audio player styling */
+        audio {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px; /* Reduced margin */
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Soft shadow for audio player */
+        }
+
+        /* Message display area */
+        #messages-container {
+            margin-top: 10px; /* Reduced margin */
+            min-height: 25px; /* Reserve space for messages */
+            font-size: 0.85em; /* Slightly smaller font for messages */
+        }
+
+        /* Loading message style */
+        #loading-message {
+            color: #007bff; /* Blue for loading */
+            font-weight: 600;
+        }
+
+        /* Error message style */
+        #error-message {
+            color: #dc3545; /* Red for errors */
+            font-weight: 600;
+        }
+
+        /* Media queries for responsive design on smaller screens */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px; /* Further reduced container padding */
+            }
+            h1 {
+                font-size: 1.4em; /* Smaller heading on mobile */
+                margin-bottom: 10px;
+            }
+            button {
+                padding: 10px 18px;
+                font-size: 0.9em;
+            }
+            .controls {
+                flex-direction: row; /* Keep buttons in a row for small mobile, but wrap */
+                flex-wrap: wrap;
+                justify-content: space-around; /* Distribute buttons */
+                gap: 8px; /* Even smaller gap */
+            }
+            .controls button {
+                flex-grow: 1; /* Allow buttons to grow to fill space */
+                min-width: 45%; /* Ensure they don't get too small */
+            }
+            #avatar-container {
+                max-width: 90%; /* Allow avatar to take more width on small screens */
+                max-height: 35vh; /* Adjust max height for very short screens */
+                margin: 10px auto;
+            }
+            #messages-container {
+                margin-top: 5px;
+            }
+            audio {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SoraMinds Talking Avatar</h1>
+        <div id="messages-container">
+            <div id="loading-message"></div>
+            <div id="error-message"></div>
+        </div>
+        <div id="avatar-container">
+            <!-- SVG will be loaded here by JavaScript -->
+        </div>
+        <div class="controls">
+            <button id="speaker1-btn">Speaker 1 (American)</button>
+            <button id="speaker2-btn">Speaker 2 (Indian)</button>
+        </div>
+        <audio id="voice-audio" controls></audio>
+    </div>
+
+    <!-- Link to your JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
