@@ -1,4 +1,4 @@
-// script.js
+
 
 // --- DOM Elements ---
 const avatarContainer = document.getElementById('avatar-container');
@@ -11,74 +11,73 @@ const errorMessage = document.getElementById('error-message');
 // --- Global Variables ---
 let americanVisemeData = [];
 let indianVisemeData = [];
-let activeVisemeData = []; // This will hold either americanVisemeData or indianVisemeData
+let activeVisemeData = []; // either americanVisemeData or indianVisemeData
 let currentVisemeIndex = 0; // Tracks the current position in the activeVisemeData array
 let svgFilesContent = new Map(); // Stores preloaded SVG content
 let animationFrameId = null; // Stores the ID of the requestAnimationFrame loop
 let currentSpeaker = null; // Tracks the currently active speaker ('American' or 'Indian')
 
-// --- Configuration Paths ---
-const AVATAR_IMAGES_PATH = 'Soralink_avatar_images/'; // Path to your SVG image files
-const VOICE_VISEME_PATH = 'Avatar_voice_viseme-ID/'; // Path to your audio and viseme JSON/TXT files
+
+const AVATAR_IMAGES_PATH = 'Soralink_avatar_images/'; 
+const VOICE_VISEME_PATH = 'Avatar_voice_viseme-ID/'; 
 
 // --- Viseme ID to SVG Filename Mapping ---
-// This map connects the numerical viseme IDs from your JSON to the actual SVG filenames.
+
 const visemeToSvgFilenameMap = {
-    "0": "SVG_0.svg",  // Silence / Mouth at rest
-    "1": "SVG_1.svg",  // Open-mid front/back vowels (æ, ə, ʌ)
-    "2": "SVG_2.svg",  // Open back unrounded vowel (ɑ)
-    "3": "SVG_3.svg",  // Open-mid back rounded vowel (ɔ)
-    "4": "SVG_4.svg",  // Open-mid front/back vowels (ɛ, ʊ)
-    "5": "SVG_5.svg",  // r-colored vowel (ɚ)
-    "6": "SVG_6.svg",  // Close front vowels/glides (i, ɪ,ɨ)
-    "7": "SVG_7.svg",  // Close back rounded vowels/glides (w, u)
-    "8": "SVG_8.svg",  // Close-mid back rounded vowel (o)
-    "9": "SVG_9.svg",  // Diphthong "ow" sound (aʊ)
-    "10": "SVG_10.svg", // Diphthong "oi" sound (ɔɪ)
-    "11": "SVG_11.svg", // Diphthong "eye" sound (aɪ)
-    "12": "SVG_12.svg", // Voiceless glottal fricative (h)
-    "13": "SVG_13.svg", // Alveolar approximant ("r") (ɹ)
-    "14": "SVG_14.svg", // Alveolar lateral approximant ("l") (l)
-    "15": "SVG_15.svg", // Voiceless/voiced alveolar fricatives (s, z)
-    "16": "SVG_16.svg", // Postalveolar affricates/fricatives (ʃ, ʒ, tʃ, dʒ, ʒ)
-    "17": "SVG_17.svg", // Voiced dental fricative ("th") (ð)
-    "18": "SVG_18.svg", // Labiodental fricatives (f, v)
-    "19": "SVG_19.svg", // Alveolar/dental stops/nasals (d, t, n, θ)
-    "20": "SVG_20.svg", // Velar stops and nasal (k, g, ŋ)
-    "21": "SVG_21.svg"  // Bilabial stops/nasal (p, b, m)
+    "0": "SVG_0.svg",  
+    "1": "SVG_1.svg", 
+    "2": "SVG_2.svg", 
+    "3": "SVG_3.svg",  
+    "4": "SVG_4.svg",  
+    "5": "SVG_5.svg",  
+    "6": "SVG_6.svg",  
+    "7": "SVG_7.svg",  
+    "8": "SVG_8.svg",  
+    "9": "SVG_9.svg",  
+    "10": "SVG_10.svg", 
+    "11": "SVG_11.svg", 
+    "12": "SVG_12.svg", 
+    "13": "SVG_13.svg",
+    "14": "SVG_14.svg", 
+    "15": "SVG_15.svg", 
+    "16": "SVG_16.svg", 
+    "17": "SVG_17.svg", 
+    "18": "SVG_18.svg", 
+    "19": "SVG_19.svg", 
+    "20": "SVG_20.svg", 
+    "21": "SVG_21.svg"  
 };
 
-const IDLE_VISEME_ID = "0"; // The viseme ID representing the idle/rest mouth shape
+const IDLE_VISEME_ID = "0";
 
-// --- Helper Functions for UI Feedback ---
-// Shows a loading message and disables buttons
+
 function showLoading(message) {
     loadingMessage.textContent = message;
-    errorMessage.textContent = ''; // Clear any previous errors
+    errorMessage.textContent = ''; 
     speaker1Btn.disabled = true;
     speaker2Btn.disabled = true;
 }
 
-// Hides the loading message and enables buttons
+
 function hideLoading() {
     loadingMessage.textContent = '';
     speaker1Btn.disabled = false;
     speaker2Btn.disabled = false;
 }
 
-// Shows an error message
+
 function showErrorMessage(message) {
     errorMessage.textContent = message;
-    hideLoading(); // Also hide loading if an error occurs
+    hideLoading(); 
 }
 
-// Clears all messages
+
 function clearMessages() {
     loadingMessage.textContent = '';
     errorMessage.textContent = '';
 }
 
-// Sets the 'active' class on the clicked speaker button
+
 function setActiveButton(button) {
     speaker1Btn.classList.remove('active');
     speaker2Btn.classList.remove('active');
@@ -127,7 +126,7 @@ async function fetchJsonData(path) {
 
         // --- Common Processing for both formats ---
         // Ensure viseme_id is string for map lookup (as our map keys are strings)
-        // Also parse np.int64() if present in offset or viseme_id (common in some tools)
+        
         processedData = processedData.map(v => {
             let offset = v.offset;
             let visemeId = v.viseme_id;
@@ -140,7 +139,7 @@ async function fetchJsonData(path) {
                 visemeId = String(parseFloat(visemeId.substring(9, visemeId.length - 1)));
             }
             
-            // Ensure viseme_id is always a string for consistent map lookup
+           
             return {
                 offset: offset,
                 viseme_id: String(visemeId)
@@ -252,7 +251,7 @@ function updateMouthShapeAnimation() {
             }
         }
     }
-    // Request the next animation frame to continue the loop
+  
     animationFrameId = requestAnimationFrame(updateMouthShapeAnimation);
 }
 
@@ -261,19 +260,19 @@ function updateMouthShapeAnimation() {
  * @param {string} speakerName - The name of the speaker ('American' or 'Indian').
  */
 async function selectSpeaker(speakerName) {
-    clearMessages(); // Clear any existing messages
-    showLoading(`Loading ${speakerName} voice...`); // Show loading indicator
+    clearMessages(); 
+    showLoading(`Loading ${speakerName} voice...`);
     console.log(`Selecting speaker: ${speakerName}`);
 
-    // Stop any ongoing animation frame and pause current audio
+    
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
     }
     voiceAudio.pause();
-    voiceAudio.currentTime = 0; // Reset audio to start
+    voiceAudio.currentTime = 0; 
 
-    // Set source for audio and active viseme data based on speaker name
+    
     if (speakerName === 'American') {
         setActiveButton(speaker1Btn);
         voiceAudio.src = `${VOICE_VISEME_PATH}American_voice.wav`;
@@ -287,27 +286,27 @@ async function selectSpeaker(speakerName) {
         showErrorMessage("Invalid speaker selected.");
         return;
     }
-    currentSpeaker = speakerName; // Update global current speaker
+    currentSpeaker = speakerName;
 
-    currentVisemeIndex = 0; // CRITICAL: Reset viseme index for new playback
-    displayMouthShape(IDLE_VISEME_ID); // Display idle mouth immediately
+    currentVisemeIndex = 0; 
+    displayMouthShape(IDLE_VISEME_ID);
 
-    voiceAudio.load(); // Load the new audio source
-    // Event listener for when audio is ready to play
+    voiceAudio.load(); 
+   
     voiceAudio.oncanplaythrough = () => {
         hideLoading();
         console.log(`Audio for ${speakerName} is ready to play. Attempting to play.`);
-        // Attempt to autoplay, catch and inform user if blocked
+        
         voiceAudio.play().catch(e => {
             console.error(`Error attempting to autoplay audio for ${speakerName}:`, e);
             showErrorMessage(`Autoplay failed for ${speakerName} speaker. Please click play on the audio player.`);
         });
     };
-    // Event listener for audio loading errors
+    
     voiceAudio.onerror = (e) => {
         console.error(`Error loading or playing audio for ${speakerName}:`, e);
         showErrorMessage(`Could not load ${speakerName} audio. Check file path or console.`);
-        displayMouthShape(IDLE_VISEME_ID); // Reset mouth to idle on error
+        displayMouthShape(IDLE_VISEME_ID); 
         hideLoading();
     };
 }
@@ -334,7 +333,7 @@ voiceAudio.addEventListener('play', () => {
             console.error('Failed to auto-select American speaker on native play:', err);
             showErrorMessage('Please select a speaker first.');
         });
-        return; // Exit to avoid re-triggering logic immediately
+        return; 
     }
 
     const audioTimeMs = voiceAudio.currentTime * 1000;
@@ -343,10 +342,10 @@ voiceAudio.addEventListener('play', () => {
     currentVisemeIndex = 0; 
     for (let i = 0; i < activeVisemeData.length; i++) {
         if (activeVisemeData[i] && audioTimeMs < activeVisemeData[i].offset) {
-            currentVisemeIndex = Math.max(0, i - 1); // Go back one to catch the right viseme if between
+            currentVisemeIndex = Math.max(0, i - 1); 
             break;
         }
-        currentVisemeIndex = i; // If we reach end or past all, set to last index
+        currentVisemeIndex = i; 
     }
 
     // Start the animation loop if it's not already running
@@ -362,7 +361,7 @@ voiceAudio.addEventListener('pause', () => {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
     }
-    // Mouth stays on the last displayed shape when paused, can be changed to IDLE_VISEME_ID if preferred
+    
 });
 
 // Event listener for when audio playback ends
@@ -372,15 +371,15 @@ voiceAudio.addEventListener('ended', () => {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
     }
-    displayMouthShape(IDLE_VISEME_ID); // Reset mouth to idle
-    currentVisemeIndex = 0; // Reset viseme index for next play
-    setActiveButton(null); // Deselect active speaker button
-    clearMessages(); // Clear any messages
+    displayMouthShape(IDLE_VISEME_ID);
+    currentVisemeIndex = 0;
+    setActiveButton(null); 
+    clearMessages();
 });
 
 
 // --- Initialization ---
-// This runs once the HTML document is fully loaded
+
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOM Content Loaded. Initializing app...');
 
@@ -404,7 +403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Display the idle mouth shape after all assets are loaded
     displayMouthShape(IDLE_VISEME_ID);
-    hideLoading(); // Hide loading indicator once initialized
+    hideLoading(); 
 
     console.log('App initialized. Ready to select speaker.');
 });
